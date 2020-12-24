@@ -32,6 +32,52 @@ var
 	w: TWAVEfmt;
 	b: TBlockHdr;
 
+
+procedure DumpHexData(AStream: TStream);
+	var
+	i: Integer;
+	s: string;
+	a: string;
+	b: Byte;
+
+	begin
+	AStream.Position:= 0;
+	i:= 0;
+	s:= IntToHex(d.Position, 4) + ' ' ;
+	a:= '';
+
+	while AStream.Position < AStream.Size do
+		begin
+		AStream.Read(b, 1);
+		s:= s + IntToHex(b, 2) + ' ';
+		if  (b < 32)
+		or  (b > 126) then
+			a:= a + '_'
+		else
+			a:= a + string(AnsiChar(b));
+		Inc(i);
+
+		if  i = 16 then
+			begin
+			Writeln(s + '  ' + a);
+			i:= 0;
+			s:= IntToHex(d.Position, 4) + ' ' ;
+			a:= '';
+			end;
+		end;
+
+	if  i > 0  then
+		begin
+		while i < 16 do
+			begin
+			s:= s + '   ';
+			Inc(i);
+			end;
+
+		Writeln(s + '  ' + a);
+		end;
+	end;
+
 begin
 try
 	f:= TFileStream.Create(ParamStr(1), fmOpenRead);
@@ -60,11 +106,14 @@ try
 						end
 					else
 						Break;
-                end;
+				end;
 
 			if  d.Size > 0 then
 				begin
-                Writeln(#9'Found ' + IntToStr(d.Size) + 'bytes.');
+				Writeln(#9'Found ' + IntToStr(d.Size) + 'bytes.');
+				Writeln;
+
+				DumpHexData(d);
 
 				o:= TFileStream.Create(ParamStr(1) + '.dat', fmCreate);
 				try
